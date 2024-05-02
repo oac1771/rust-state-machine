@@ -2,9 +2,9 @@ use num::traits::Zero;
 use std::{collections::BTreeMap, ops::AddAssign};
 
 pub trait Config {
-	type AccountId;
-	type BlockNumber;
-	type Nonce;
+	type AccountId: Ord + Copy;
+	type BlockNumber: Zero + AddAssign + From<u32> + Copy;
+	type Nonce: From<u32> + Into<u32> + Copy;
 }
 
 #[derive(Debug)]
@@ -13,12 +13,7 @@ pub struct System<T: Config> {
 	nonce: BTreeMap<T::AccountId, T::Nonce>,
 }
 
-impl<T: Config> System<T>
-where
-	T::AccountId: Ord,
-	T::BlockNumber: Zero + AddAssign + From<u32> + Copy,
-	T::Nonce: From<u32> + Into<u32> + Copy,
-{
+impl<T: Config> System<T> {
 	pub fn new() -> Self {
 		Self { block_number: T::BlockNumber::zero(), nonce: BTreeMap::new() }
 	}

@@ -14,7 +14,6 @@ impl system::Config for Runtime {
 }
 
 impl balances::Config for Runtime {
-	type AccountId = &'static str;
 	type Balance = u128;
 }
 
@@ -25,8 +24,8 @@ impl Runtime {
 
 	pub fn transact(
 		&mut self,
-		from: <Runtime as balances::Config>::AccountId,
-		to: <Runtime as balances::Config>::AccountId,
+		from: <Runtime as system::Config>::AccountId,
+		to: <Runtime as system::Config>::AccountId,
 		amount: <Runtime as balances::Config>::Balance,
 	) {
 		self.system.inc_nonce(from);

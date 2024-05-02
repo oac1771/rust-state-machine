@@ -1,9 +1,9 @@
+use crate::system::Config as SysConfig;
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 use std::collections::BTreeMap;
 
-pub trait Config {
-	type AccountId;
-	type Balance;
+pub trait Config: SysConfig {
+	type Balance: CheckedAdd + CheckedSub + Zero + Copy;
 }
 
 #[derive(Debug)]
@@ -11,11 +11,7 @@ pub struct Balances<T: Config> {
 	pub balances: BTreeMap<T::AccountId, T::Balance>,
 }
 
-impl<T: Config> Balances<T>
-where
-	T::AccountId: Ord + Copy,
-	T::Balance: CheckedAdd + CheckedSub + Zero + Copy,
-{
+impl<T: Config> Balances<T> {
 	pub fn new() -> Self {
 		Self { balances: BTreeMap::new() }
 	}
@@ -58,8 +54,13 @@ mod test {
 	struct TestConfig;
 
 	impl Config for TestConfig {
-		type AccountId = &'static str;
 		type Balance = u128;
+	}
+
+	impl crate::system::Config for TestConfig {
+		type AccountId = &'static str;
+		type BlockNumber = u32;
+		type Nonce = u32;
 	}
 
 	#[test]
