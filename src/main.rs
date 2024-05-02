@@ -30,8 +30,17 @@ fn main() {
 		}],
 	};
 
+	let block_3 = support::Block {
+		header: support::Header { block_number: 3 },
+		extrinsics: vec![support::Extrinsic {
+			caller: alice,
+			call: runtime::RuntimeCall::PoE(proof_of_existence::Call::RevokeClaim { claim: "alices claim" }),
+		}],
+	};
+
 	runtime.execute_block(block_1).unwrap();
 	runtime.execute_block(block_2).unwrap();
+	runtime.execute_block(block_3).unwrap();
 
 	println!("{:?}", runtime);
 }
