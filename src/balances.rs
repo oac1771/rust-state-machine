@@ -1,9 +1,14 @@
+use crate::support::{Dispatch, DispatchResult};
 use crate::system::Config as SysConfig;
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 use std::collections::BTreeMap;
 
 pub trait Config: SysConfig {
 	type Balance: CheckedAdd + CheckedSub + Zero + Copy;
+}
+
+pub enum Call<T: Config> {
+	BalancesTranster { to: T::AccountId, amount: T::Balance },
 }
 
 #[derive(Debug)]
@@ -43,6 +48,20 @@ impl<T: Config> Balances<T> {
 		self.set_balance(caller, new_caller_balance);
 		self.set_balance(to, new_to_balance);
 
+		Ok(())
+	}
+}
+
+impl<T: Config> Dispatch for Balances<T> {
+	type Call = Call<T>;
+	type Caller = T::AccountId;
+
+	fn dispatch(&mut self, caller: Self::Caller, call: Self::Call) -> DispatchResult {
+		match call {
+			Call::BalancesTranster { to, amount } => {
+				self.transfer(caller, to, amount)?;
+			},
+		}
 		Ok(())
 	}
 }

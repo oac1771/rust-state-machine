@@ -22,6 +22,10 @@ impl<T: Config> System<T> {
 		self.block_number += T::BlockNumber::from(1);
 	}
 
+	pub fn block_number(&self) -> T::BlockNumber {
+		self.block_number
+	}
+
 	pub fn inc_nonce(&mut self, who: T::AccountId) {
 		let nonce = self.nonce.get(&who);
 
@@ -37,15 +41,6 @@ impl<T: Config> System<T> {
 #[cfg(test)]
 mod test {
 	use super::*;
-
-	impl<T: Config> System<T>
-	where
-		T::BlockNumber: Zero + AddAssign + From<u32> + Copy,
-	{
-		pub fn block_number(&self) -> T::BlockNumber {
-			self.block_number
-		}
-	}
 
 	struct TestConfig;
 
