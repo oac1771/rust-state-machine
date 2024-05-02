@@ -1,11 +1,21 @@
 use crate::balances;
 use crate::system;
-use super::types::*;
 
 #[derive(Debug)]
 pub struct Runtime {
-	pub system: system::System<AccountId, BlockNumber, Nonce>,
-	pub balances: balances::Balances<AccountId, Balance>,
+	pub system: system::System<Self>,
+	pub balances: balances::Balances<Self>,
+}
+
+impl system::Config for Runtime {
+	type AccountId = &'static str;
+	type BlockNumber = u32;
+	type Nonce = u32;
+}
+
+impl balances::Config for Runtime {
+	type AccountId = &'static str;
+	type Balance = u128;
 }
 
 impl Runtime {
@@ -13,7 +23,12 @@ impl Runtime {
 		Self { system: system::System::new(), balances: balances::Balances::new() }
 	}
 
-	pub fn transact(&mut self, from: AccountId, to: AccountId, amount: Balance) {
+	pub fn transact(
+		&mut self,
+		from: <Runtime as balances::Config>::AccountId,
+		to: <Runtime as balances::Config>::AccountId,
+		amount: <Runtime as balances::Config>::Balance,
+	) {
 		self.system.inc_nonce(from);
 		let _ = self
 			.balances

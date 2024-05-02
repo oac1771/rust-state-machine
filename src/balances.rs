@@ -1,33 +1,38 @@
 use num::traits::{CheckedAdd, CheckedSub, Zero};
 use std::collections::BTreeMap;
 
-#[derive(Debug)]
-pub struct Balances<AccountId, Balance> {
-	pub balances: BTreeMap<AccountId, Balance>,
+pub trait Config {
+	type AccountId;
+	type Balance;
 }
 
-impl<AccountId, Balance> Balances<AccountId, Balance>
+#[derive(Debug)]
+pub struct Balances<T: Config> {
+	pub balances: BTreeMap<T::AccountId, T::Balance>,
+}
+
+impl<T: Config> Balances<T>
 where
-	AccountId: Ord + Copy,
-	Balance: CheckedAdd + CheckedSub + Zero + Copy,
+	T::AccountId: Ord + Copy,
+	T::Balance: CheckedAdd + CheckedSub + Zero + Copy,
 {
 	pub fn new() -> Self {
 		Self { balances: BTreeMap::new() }
 	}
 
-	pub fn set_balance(&mut self, who: AccountId, amount: Balance) {
+	pub fn set_balance(&mut self, who: T::AccountId, amount: T::Balance) {
 		self.balances.insert(who, amount);
 	}
 
-	pub fn balance(&self, who: AccountId) -> Balance {
-		*self.balances.get(&who).unwrap_or(&Balance::zero())
+	pub fn balance(&self, who: T::AccountId) -> T::Balance {
+		*self.balances.get(&who).unwrap_or(&T::Balance::zero())
 	}
 
 	pub fn transfer(
 		&mut self,
-		caller: AccountId,
-		to: AccountId,
-		amount: Balance,
+		caller: T::AccountId,
+		to: T::AccountId,
+		amount: T::Balance,
 	) -> Result<(), &'static str> {
 		let caller_balance = self.balance(caller);
 		let to_balance = self.balance(to);
@@ -50,9 +55,16 @@ where
 mod test {
 	use super::*;
 
+	struct TestConfig;
+
+	impl Config for TestConfig {
+		type AccountId = &'static str;
+		type Balance = u128;
+	}
+
 	#[test]
 	fn test_set_balance() {
-		let mut balances = Balances::new();
+		let mut balances: Balances<TestConfig> = Balances::new();
 		let balance_amount = 42;
 
 		assert_eq!(balances.balance("foo"), 0);
@@ -64,7 +76,7 @@ mod test {
 
 	#[test]
 	fn test_transfer_works() {
-		let mut balances = Balances::new();
+		let mut balances: Balances<TestConfig> = Balances::new();
 
 		balances.set_balance("foo", 100);
 		balances.transfer("foo", "bar", 100).unwrap();
